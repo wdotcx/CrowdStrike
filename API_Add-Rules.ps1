@@ -4,7 +4,6 @@
 # Add CrowdStrike firewall rules from csv "Dir,Version,Active,ICMP4,EmbedCtxt,Action,LA4,RPort,Protocol,Profile,RMAuth,Svc,Desc,Security,RA4,LPort,Name,App" (not all fields used)
 # csv fields from exported Windows Firewall, as xml then parsed to csv (WindowsFirewall_xml2csv.py)
 #
-
 Import-Module PSFalcon
 
 Request-FalconToken -ClientId '' -ClientSecret ''    # API keys
