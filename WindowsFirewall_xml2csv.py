@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 #
-# Convert Windows Firewall Group Policy xml export to csv
+# 'WindowsFirewall_xml2csv.py' Convert Windows Firewall Group Policy xml export to csv
 #
 import csv
 import ipaddress

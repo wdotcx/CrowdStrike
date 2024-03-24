@@ -1,8 +1,8 @@
 #
-# 'CrowdStrike API Add-Rule.ps1' based from https://github.com/CrowdStrike/psfalcon/wiki/Edit-FalconFirewallGroup
+# 'API_Add-Rule.ps1' based from https://github.com/CrowdStrike/psfalcon/wiki/Edit-FalconFirewallGroup
 #
 # Add CrowdStrike firewall rules from csv "Dir,Version,Active,ICMP4,EmbedCtxt,Action,LA4,RPort,Protocol,Profile,RMAuth,Svc,Desc,Security,RA4,LPort,Name,App" (not all fields used)
-# csv fields from exported Windows Firewall rules as xml then parsed to csv
+# csv fields from exported Windows Firewall, as xml then parsed to csv (WindowsFirewall_xml2csv.py)
 #
 
 Import-Module PSFalcon
@@ -10,7 +10,8 @@ Import-Module PSFalcon
 Request-FalconToken -ClientId '' -ClientSecret ''    # API keys
 $FalconFirewallGroup = ''    # CrowdStrike rule-group ID
 
-$csvData = Import-Csv -Path "C:\PATH\TO\CSV\import.csv"
+$csvData = Import-Csv -Path "C:\PATH\TO\CSV\InboundFirewallRules.csv"
+#$csvData = Import-Csv -Path "C:\PATH\TO\CSV\OutboundFirewallRules.csv"
 $lineNumber = 0
 
 foreach ($line in $csvData) {
