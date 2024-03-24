@@ -2,7 +2,7 @@
 # 'API_Add-Rule.ps1' based from https://github.com/CrowdStrike/psfalcon/wiki/Edit-FalconFirewallGroup
 #
 # Add CrowdStrike firewall rules from csv "Dir,Version,Active,ICMP4,EmbedCtxt,Action,LA4,RPort,Protocol,Profile,RMAuth,Svc,Desc,Security,RA4,LPort,Name,App" (not all fields used)
-# csv fields from exported Windows Firewall, as xml then parsed to csv (WindowsFirewall_xml2csv.py)
+# csv fields from exported Windows Firewall Group Policy, as xml then parsed to csv (WindowsFirewall_xml2csv.py)
 #
 Import-Module PSFalcon
 
