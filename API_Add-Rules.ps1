@@ -6,15 +6,25 @@
 #
 Import-Module PSFalcon
 
-Request-FalconToken -ClientId '' -ClientSecret ''    # API keys
-$FalconFirewallGroup = ''    # CrowdStrike rule-group ID
+#
+# Variables
+#
+$ClientId = ''
+$ClientSecret = ''
+$FalconFirewallGroup = ''
+$csvData = Import-Csv -Path "InboundFirewallRules.csv"
+#$csvData = Import-Csv -Path "OutboundFirewallRules.csv"
 
-$csvData = Import-Csv -Path "C:\PATH\TO\CSV\InboundFirewallRules.csv"
-#$csvData = Import-Csv -Path "C:\PATH\TO\CSV\OutboundFirewallRules.csv"
-$lineNumber = 0
+#
+# Main
+#
+Request-FalconToken -ClientId $ClientId -ClientSecret $ClientSecret
+
+[Array]::Reverse($csvData)
+$lineNumber = $csvData.Count + 1    # Offset for csv header
 
 foreach ($line in $csvData) {
-    $lineNumber++
+    $lineNumber--
 
     if ($line.Dir -eq 'In') { $line.Dir = 'IN' } elseif ($line.Dir -eq 'Out') { $line.Dir = 'OUT' }
     else { Write-Host "Failed at line $lineNumber. Direction not found. $line"; continue }
@@ -131,11 +141,10 @@ foreach ($line in $csvData) {
     $RuleId = @('1') + $Group.rule_ids
     $RuleVersion = @('0') + $Rule.version
 
-    #write-Host $Rule
     #$DiffOperation | ConvertTo-Json -Depth 10 | Write-Output
 
     try {
-        Write-Host "Executing line $lineNumber."
+        Write-Host "Processing line $lineNumber."
         Edit-FalconFirewallGroup -Id $Group.id -DiffOperation $DiffOperation -RuleId $RuleId -RuleVersion $RuleVersion -ErrorAction Continue
     }
     catch {
