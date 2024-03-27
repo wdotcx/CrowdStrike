@@ -24,7 +24,6 @@ Request-FalconToken -ClientId $ClientId -ClientSecret $ClientSecret
 $lineNumber = $csvData.Count + 1    # Offset for csv header
 
 foreach ($line in $csvData) {
-    $lineNumber--
 
     if ($line.Dir -eq 'In') { $line.Dir = 'IN' } elseif ($line.Dir -eq 'Out') { $line.Dir = 'OUT' }
     else { Write-Host "Failed at line $lineNumber. Direction not found. $line"; continue }
@@ -44,7 +43,7 @@ foreach ($line in $csvData) {
         $ipAddresses = $line.RA4 -split ';' | ForEach-Object { $_.Trim() }
         $remoteAddress = @()
         foreach ($ip in $ipAddresses) {
-            if ($ip -match '/') {   # If the address has a CIDR block
+            if ($ip -match '/') {   # If the address has a CIDR block e.g. "10.0.1.0/24"
                 $cidrParts = $ip -split '/'
                 $remoteAddress += @{ address = $cidrParts[0]; netmask = [int]$cidrParts[1] }
             } else {    # If the address does not have CIDR block
@@ -62,7 +61,7 @@ foreach ($line in $csvData) {
         $ipAddresses = $line.LA4 -split ';' | ForEach-Object { $_.Trim() }
         $localAddress = @()
         foreach ($ip in $ipAddresses) {
-            if ($ip -match '/') {    # If the address has a CIDR block
+            if ($ip -match '/') {    # If the address has a CIDR block e.g. "10.0.1.0/24"
                 $cidrParts = $ip -split '/'
                 $localAddress += @{ address = $cidrParts[0]; netmask = [int]$cidrParts[1] }
             } else {    # If the address does not have CIDR block
@@ -71,20 +70,23 @@ foreach ($line in $csvData) {
         }
     }
 
-    if ([string]::IsNullOrWhiteSpace($line.Protocol)) {    # Ports not allowed without a specific Protocol
-        $localPort = @()
-        $remotePort = @()
+    $localPort = @()
+    $remotePort = @()
 
+    if ([string]::IsNullOrWhiteSpace($line.Protocol)) {    # Ports not allowed without a specific Protocol
         $line.Protocol = '*'    # ANY
     } else {
-        $localPort = @()
-        $remotePort = @()
 
         # Handle 'RPort' column for remote_port
         if (![string]::IsNullOrWhiteSpace($line.RPort)) {
             $rPorts = $line.RPort -split ',' | ForEach-Object { $_.Trim() }
             foreach ($rport in $rPorts) {
-                $remotePort += @{ start = [int]$rport; end = 0 }    # [int] Remove quotes around port numbers
+                if ($rport -match '-') {    # If port range e.g. "135, 49152-65535"
+                    $portRange = $rport -split '-'
+                    $remotePort += @{ start = [int]$portRange[0]; end = [int]$portRange[1] }
+                } else {
+                    $remotePort += @{ start = [int]$rport; end = 0 }    # [int] Remove quotes around port numbers
+                }
             }
         }
 
@@ -92,23 +94,28 @@ foreach ($line in $csvData) {
         if (![string]::IsNullOrWhiteSpace($line.LPort)) {
             $lPorts = $line.LPort -split ',' | ForEach-Object { $_.Trim() }
             foreach ($lport in $lPorts) {
-                $localPort += @{ start = [int]$lport; end = 0 }    # [int] Remove quotes around port numbers
+                if ($lport -match '-') {    # If port range e.g. "135, 49152-65535"
+                    $portRange = $lport -split '-'
+                    $localPort += @{ start = [int]$portRange[0]; end = [int]$portRange[1] }
+                } else {
+                    $localPort += @{ start = [int]$lport; end = 0 }    # [int] Remove quotes around port numbers
+                }
             }
         }
     }
 
+    if (![string]::IsNullOrWhiteSpace($line.Svc)) {
+        $service = @{ name='service_name'; type='string'; value=$line.Svc }
+    } else {
+        $service = @()
+    }
+
     $fieldsTable = @(
-        @{
-            name = 'network_location'
-            type = 'set'
-            values = @( 'ANY' )
-        },
-        @{
-            name = 'image_name'
-            type = 'windows_path'
-            value = $line.App
-        }
+        @{ name = 'network_location'; type = 'set'; values = @( 'ANY' ) }
+        @{ name = 'image_name'; type = 'windows_path'; value = $line.App }
     )
+
+    if ($service.Count -gt 0) { $fieldsTable += $service }    # service_name only requred if Svc in csv
 
     $valueTable = @{
         temp_id = '1'
@@ -150,5 +157,7 @@ foreach ($line in $csvData) {
     catch {
         Write-Host "An error occurred at line $lineNumber. $_"
     }
+
+    $lineNumber--
 
 }
