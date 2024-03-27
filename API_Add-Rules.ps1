@@ -12,8 +12,7 @@ Import-Module PSFalcon
 $ClientId = ''
 $ClientSecret = ''
 $FalconFirewallGroup = ''
-$csvData = Import-Csv -Path "InboundFirewallRules.csv"
-#$csvData = Import-Csv -Path "OutboundFirewallRules.csv"
+$csvData = Import-Csv -Path "example.csv"
 
 #
 # Main
