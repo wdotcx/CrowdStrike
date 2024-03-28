@@ -82,9 +82,9 @@ foreach ($line in $csvData) {
             foreach ($rport in $rPorts) {
                 if ($rport -match '-') {    # If port range e.g. "135, 49152-65535"
                     $portRange = $rport -split '-'
-                    $remotePort += @{ start = [int]$portRange[0]; end = [int]$portRange[1] }
+                    $remotePort += @{ start = [int]$portRange[0]; end = [int]$portRange[1] }    # [int] Remove quotes around port numbers
                 } else {
-                    $remotePort += @{ start = [int]$rport; end = 0 }    # [int] Remove quotes around port numbers
+                    $remotePort += @{ start = [int]$rport; end = 0 }
                 }
             }
         }
@@ -95,18 +95,20 @@ foreach ($line in $csvData) {
             foreach ($lport in $lPorts) {
                 if ($lport -match '-') {    # If port range e.g. "135, 49152-65535"
                     $portRange = $lport -split '-'
-                    $localPort += @{ start = [int]$portRange[0]; end = [int]$portRange[1] }
+                    $localPort += @{ start = [int]$portRange[0]; end = [int]$portRange[1] }   # [int] Remove quotes around port numbers
                 } else {
-                    $localPort += @{ start = [int]$lport; end = 0 }    # [int] Remove quotes around port numbers
+                    $localPort += @{ start = [int]$lport; end = 0 }
                 }
             }
         }
+
     }
 
-    if (![string]::IsNullOrWhiteSpace($line.Svc)) {
-        $service = @{ name='service_name'; type='string'; value=$line.Svc }
-    } else {
+    # Handle 'Svc' column for service_name
+    if ([string]::IsNullOrWhiteSpace($line.Svc)) {
         $service = @()
+    } else {
+        $service = @{ name='service_name'; type='string'; value=$line.Svc }
     }
 
     $fieldsTable = @(
@@ -116,7 +118,7 @@ foreach ($line in $csvData) {
 
     if ($service.Count -gt 0) { $fieldsTable += $service }    # service_name only requred if Svc in csv
 
-    $valueTable = @{
+    $valuesTable = @{
         temp_id = '1'
         name = $line.Name
         description = ''
@@ -131,14 +133,14 @@ foreach ($line in $csvData) {
         remote_address = $remoteAddress
     }
 
-    if ($localPort.Count -gt 0) { $valueTable['local_port'] = $localPort }    # local_port only requred if there are LPorts in csv
-    if ($remotePort.Count -gt 0) { $valueTable['remote_port'] = $remotePort }    # remote_port only requred if there are RPorts in csv
+    if ($localPort.Count -gt 0) { $valuesTable['local_port'] = $localPort }    # local_port only requred if there are LPorts in csv
+    if ($remotePort.Count -gt 0) { $valuesTable['remote_port'] = $remotePort }    # remote_port only requred if there are RPorts in csv
 
     $DiffOperation = @(
         @{
             op = 'add'
             path = '/rules/0'
-            value = $valueTable
+            value = $valuesTable
         }
     )
 
