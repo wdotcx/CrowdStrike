@@ -121,7 +121,7 @@ foreach ($line in $csvData) {
     $valuesTable = @{
         temp_id = '1'
         name = $line.Name
-        description = ''
+        description = $line.Desc
         platform_ids = @('0')
         enabled = $line.Active
         action = $line.Action
@@ -131,6 +131,7 @@ foreach ($line in $csvData) {
         fields = $fieldsTable
         local_address = $localAddress
         remote_address = $remoteAddress
+        monitor = @{ count = '1' }    # enable or disable Watch Mode
     }
 
     if ($localPort.Count -gt 0) { $valuesTable['local_port'] = $localPort }    # local_port only requred if there are LPorts in csv
