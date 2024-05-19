@@ -13,7 +13,7 @@ Tasked with migrating hundreds (thousands?) of Windows Firewall rules across man
   - A PowerShell script to add firewall rules using the CrowdStrike API from CSV files.
 
 - **API_WatchMode.ps1**
-  - A PowerShell script to quickly bulk turn on/off Watch Mode on firewall rules.
+  - A PowerShell script to quickly bulk enable/disable Watch Mode on firewall rules.
 
 ### 📊 Log Analysis Scripts
 - **summariseLogs.py**
