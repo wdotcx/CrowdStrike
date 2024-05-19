@@ -2,8 +2,8 @@
 # Description: After generating firewall rule summaries with 'summariseLogs.py', compare rules that have been added, deleted, or IP addresses added to existing rules.
 #              Typically you would have different daily summaries to compare firewall rule summaries.
 #
-# Usage: python3 compareLogs.py [first] [updated]
-#        e.g. # python3 compareLogs.py CSSum-Outbound-20240519.csv CSSum-Outbound-20240521.csv
+# Usage: python3 compareLogsInbound.py [first] [updated]
+#        e.g. # python3 compareLogsInbound.py CSSum-Outbound-20240519.csv CSSum-Outbound-20240521.csv
 #
 # Requires: pandas ; pip install pandas
 #
@@ -22,26 +22,36 @@ args = parser.parse_args()
 filePathFirst = args.first
 filePathUpdated = args.updated
 dataFirst = pd.read_csv(filePathFirst)
-dataupdated = pd.read_csv(filePathUpdated)
+dataUpdated = pd.read_csv(filePathUpdated)
+
+# Check for 'LocalPort' or 'RemotePort' column
+if 'LocalPort' in dataFirst.columns and 'LocalPort' in dataUpdated.columns:
+    portColumn = 'LocalPort'
+    outputType = 'Inbound'
+elif 'RemotePort' in dataFirst.columns and 'RemotePort' in dataUpdated.columns:
+    portColumn = 'RemotePort'
+    outputType = 'Outbound'
+else:
+    raise ValueError("Both files must contain either 'LocalPort' or 'RemotePort' column.")
 
 # Relevant columns
-columns = ['Svc', 'ImageFileName', 'Protocol', 'RemotePort']
+columns = ['Svc', 'ImageFileName', 'Protocol', portColumn]
 
 # Find added and deleted rows
-addedRows = dataupdated.merge(dataFirst, on=columns, how='left', indicator=True).query('_merge == "left_only"').drop(columns=['_merge'])
-deletedRows = dataFirst.merge(dataupdated, on=columns, how='left', indicator=True).query('_merge == "left_only"').drop(columns=['_merge'])
+addedRows = dataUpdated.merge(dataFirst, on=columns, how='left', indicator=True).query('_merge == "left_only"').drop(columns=['_merge'])
+deletedRows = dataFirst.merge(dataUpdated, on=columns, how='left', indicator=True).query('_merge == "left_only"').drop(columns=['_merge'])
 
 # Rename columns for added and deleted rows
 addedRows = addedRows.rename(columns={'RemoteAddress_x': 'RemoteAddress'})
 deletedRows = deletedRows.rename(columns={'RemoteAddress_y': 'RemoteAddress'})
 
 # Find remaining rows to check RemoteAddress changes
-FirstRemainingRows = dataFirst.merge(dataupdated, on=columns, how='inner', suffixes=('_original', '_diff'))
+firstRemainingRows = dataFirst.merge(dataUpdated, on=columns, how='inner', suffixes=('_original', '_diff'))
 
 # Check for changes in RemoteAddress
-remoteAddressChanges = FirstRemainingRows[FirstRemainingRows['RemoteAddress_original'] != FirstRemainingRows['RemoteAddress_diff']]
+remoteAddressChanges = firstRemainingRows[firstRemainingRows['RemoteAddress_original'] != firstRemainingRows['RemoteAddress_diff']]
 
-# Function; Find added and removed addresses in RemoteAddress
+# Function to find added and removed remote addresses
 def findAddressChanges(row):
     originalAddresses = set(str(row['RemoteAddress_original']).split('; '))
     diffAddresses = set(str(row['RemoteAddress_diff']).split('; '))
@@ -60,7 +70,7 @@ addressChanges = remoteAddressChanges.apply(findAddressChanges, axis=1)
 # Concatenate the results
 diffResults = pd.concat([remoteAddressChanges, addressChanges], axis=1)
 
-# Type of change
+# Add change identifiers
 addedRows['ChangeType'] = 'Added'
 deletedRows['ChangeType'] = 'Deleted'
 diffResults['ChangeType'] = 'Modified'
@@ -72,16 +82,17 @@ deletedRows['RemoteAddress'] = deletedRows['RemoteAddress']
 # Concatenate the results
 combineResults = pd.concat([addedRows, deletedRows, diffResults], ignore_index=True)
 
-# Ensure columns are in the correct order and fill empty values
+# Ensure columns are in the correct order and fill NA
 combineResults = combineResults[
-    ['Svc', 'ImageFileName', 'Protocol', 'RemotePort', 'RemoteAddress', 'RemoteAddress_original',
+    ['Svc', 'ImageFileName', 'Protocol', portColumn, 'RemoteAddress', 'RemoteAddress_original',
      'RemoteAddress_diff', 'RemoteAddress_add', 'RemoteAddress_remove', 'ChangeType']
 ].fillna('')
+
 
 timestamp = time.strftime('%Y%m%dT%H%M%S', time.localtime())
 
 # Save the combined DataFrame to a csv file
-outputPath = f'CSCom-results-{timestamp}.csv'
+outputPath = f'CSCom-{outputType}-results-{timestamp}.csv'
 combineResults.to_csv(outputPath, index=False)
 
 print(f"Compare results saved to {outputPath}")
