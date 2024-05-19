@@ -20,6 +20,6 @@ Tasked with migrating hundreds (thousands?) of Windows Firewall rules across man
   - A Python script to summarise exported CrowdStrike 'Firewall activity' CSV files into Inbound and Outbound firewall rule usage.
 
 - **compareLogs.py**
-  - A Python script to compare rules that have been added, deleted, or IP addresses added to existing rules from the summarised logs.
+  - A Python script to compare summarised rules that may require rules to be added, deleted, or IP addresses added to existing rules from summariseLogs.py
 
 ---
