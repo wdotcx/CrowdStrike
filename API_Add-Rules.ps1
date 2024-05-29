@@ -4,19 +4,55 @@
 # Add CrowdStrike firewall rules from csv "Dir,Version,Active,ICMP4,EmbedCtxt,Action,LA4,RPort,Protocol,Profile,RMAuth,Svc,Desc,Security,RA4,LPort,Name,App" (not all fields used)
 # csv fields from exported Windows Firewall Group Policy, as xml then parsed to csv (WindowsFirewall_xml2csv.py)
 #
+# .env
+# CLIENT_ID=
+# CLIENT_SECRET=
+#
 Import-Module PSFalcon
 
 #
 # Variables
 #
-$ClientId = ''
-$ClientSecret = ''
 $FalconFirewallGroup = ''
 $csvData = Import-Csv -Path "example.csv"
+
+$ClientId = ''    # .env credential override
+$ClientSecret = ''    # .env credential override
 
 #
 # Main
 #
+$envFilePath = ".env"
+
+function Get-EnvVars {
+    param (
+        [string]$FilePath
+    )
+
+    $envVars = @{}
+    if (Test-Path $FilePath) {
+        $lines = Get-Content $FilePath
+        foreach ($line in $lines) {
+            if ($line -match '^\s*([^#][^=]+)\s*=\s*(.*)\s*$') {
+                $key = $matches[1].Trim()
+                $value = $matches[2].Trim()
+                $envVars[$key] = $value
+            }
+        }
+    }
+    return $envVars
+}
+
+if (Test-Path $envFilePath) {
+    $envVars = Get-EnvVars -FilePath $envFilePath
+    if ($envVars.ContainsKey('CLIENT_ID')) {
+        $ClientId = $envVars['CLIENT_ID']
+    }
+    if ($envVars.ContainsKey('CLIENT_SECRET')) {
+        $ClientSecret = $envVars['CLIENT_SECRET']
+    }
+}
+
 Request-FalconToken -ClientId $ClientId -ClientSecret $ClientSecret
 
 [Array]::Reverse($csvData)
