@@ -1,11 +1,11 @@
-Svc,RPort,ICMP4,Protocol,Version,App,RA4,Desc,LPort,Action,Profile,Dir,EmbedCtxt,Security,RMAuth,Name,LA4,Active
-,,,,2.1,C:\Program Files\Citrix\Secure Access Client\aoservice.exe,,,,Allow,,Out,,,,Citrix Gateway AlwaysOn Service (outbound),,TRUE
-,,,,2.1,C:\Program Files\Citrix\Secure Access Client\nsepa.exe,,,,Allow,,Out,,,,Citrix Gateway Endpoint Analysis (outbound),,TRUE
-,,,,2.1,C:\Program Files\Citrix\Secure Access Client\nsload.exe,,,,Allow,,Out,,,,Citrix Gateway Plug-in (outbound),,TRUE
-,,,17,2.1,**\Program Files\WindowsApps\*\Skype\Skype.exe,,,,Allow,,Out,,,,Skype,,TRUE
-,,,6,2.1,**\Program Files\WindowsApps\*\Skype\Skype.exe,,,,Allow,,Out,,,,Skype,,TRUE
-AJRouter,,,6,2.1,%SystemRoot%\system32\svchost.exe,,,,Allow,,Out,,,,AllJoyn Router (TCP-Out),,TRUE
-AJRouter,,,17,2.1,%SystemRoot%\system32\svchost.exe,,,,Allow,,Out,,,,AllJoyn Router (UDP-Out),,TRUE
-Qwave,2177,,6,2.1,%SystemRoot%\system32\svchost.exe,10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16,,,Allow,,Out,,,,Cast to Device functionality (qWave-TCP-Out),,TRUE
-Qwave,2177,,17,2.1,%SystemRoot%\system32\svchost.exe,10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16,,,Allow,,Out,,,,Cast to Device functionality (qWave-UDP-Out),,TRUE
-dhcp,67,,17,2.1,%SystemRoot%\system32\svchost.exe,,,68,Allow,,Out,,,,Core Networking - Dynamic Host Configuration Protocol (DHCP-Out),,TRUE
+App,Dir,Action,Protocol,LA4,LPort,RA4,RPort,ICMP4,Version,Active,Name,Desc,Svc,Profile,EmbedCtxt,Security,RMAuth
+C:\Program Files\Citrix\Secure Access Client\aoservice.exe,Out,Allow,,,,,,,2.1,TRUE,Citrix Gateway AlwaysOn Service (outbound),,,,,,
+C:\Program Files\Citrix\Secure Access Client\nsepa.exe,Out,Allow,,,,,,,2.1,TRUE,Citrix Gateway Endpoint Analysis (outbound),,,,,,
+C:\Program Files\Citrix\Secure Access Client\nsload.exe,Out,Allow,,,,,,,2.1,TRUE,Citrix Gateway Plug-in (outbound),,,,,,
+**\Program Files\WindowsApps\*\Skype\Skype.exe,Out,Allow,17,,,,,,2.1,TRUE,Skype,,,,,,
+**\Program Files\WindowsApps\*\Skype\Skype.exe,Out,Allow,6,,,,,,2.1,TRUE,Skype,,,,,,
+%SystemRoot%\system32\svchost.exe,Out,Allow,6,,,,,,2.1,TRUE,AllJoyn Router (TCP-Out),,AJRouter,,,,
+%SystemRoot%\system32\svchost.exe,Out,Allow,17,,,,,,2.1,TRUE,AllJoyn Router (UDP-Out),,AJRouter,,,,
+%SystemRoot%\system32\svchost.exe,Out,Allow,6,,,10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16,2177,,2.1,TRUE,Cast to Device functionality (qWave-TCP-Out),,Qwave,,,,
+%SystemRoot%\system32\svchost.exe,Out,Allow,17,,,10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16,2177,,2.1,TRUE,Cast to Device functionality (qWave-UDP-Out),,Qwave,,,,
+%SystemRoot%\system32\svchost.exe,Out,Allow,17,,68,,67,,2.1,TRUE,Core Networking - Dynamic Host Configuration Protocol (DHCP-Out),,dhcp,,,,
